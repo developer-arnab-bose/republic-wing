@@ -12,8 +12,26 @@ apache2.conf
 ports.conf
 Listen 101
 
-sites-enabled/000-default.conf
-DocumentRoot /var/www/republicwing
+sites-enabled/republicwing.conf
+<VirtualHost *:80>
+    ServerName republicwing.com
+    ServerAlias www.republicwing.com
+
+    DocumentRoot /var/www/republicwing
+
+    <Directory /var/www/republicwing>
+        Options FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    # Redirect ALL to https://www.republicwing.com
+    RewriteEngine On
+    RewriteCond %{HTTPS} off [OR]
+    RewriteCond %{HTTP_HOST} !^www\.republicwing\.com$ [NC]
+    RewriteRule ^ https://www.republicwing.com%{REQUEST_URI} [L,R=301]
+</VirtualHost>
+sudo a2ensite republicwing.com
 
 sudo systemctl restart apache2
 sudo apt install libapache2-mod-php mariadb-server mariadb-client -y
@@ -35,7 +53,7 @@ EXIT;
 
 sudo systemctl restart mariadb
 
-sites-enabled/000-default.conf
+sites-enabled/phpmyadminin8080.conf (new name)
 <VirtualHost *:8080>
     ServerAdmin webmaster@localhost
     DocumentRoot /usr/share/phpmyadmin
@@ -50,6 +68,7 @@ sites-enabled/000-default.conf
     ErrorLog ${APACHE_LOG_DIR}/phpmyadmin_error.log
     CustomLog ${APACHE_LOG_DIR}/phpmyadmin_access.log combined
 </VirtualHost>
+sudo a2ensite phpmyadminin8080.com
 
 ports.conf
 Listen 8080
@@ -58,4 +77,7 @@ otherports wont work beacasue 8 series is for webservers
 
 blocking /phpmyadmin
 sudo a2disconf phpmyadmin.conf
+sudo systemctl restart apache2
+
+sudo a2enmod ssl rewrite headers
 sudo systemctl restart apache2
