@@ -1,0 +1,1 @@
+const invoiceSec = document.getElementById('full-invoice-section').innerHTML;

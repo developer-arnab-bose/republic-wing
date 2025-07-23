@@ -79,5 +79,19 @@ blocking /phpmyadmin
 sudo a2disconf phpmyadmin.conf
 sudo systemctl restart apache2
 
+systemctl restart apache2
+
+add in 000-default.conf
+ServerAlias *.republicwing.com
+
+sudo a2dissite 000-default.conf
+sudo systemctl reload apache2 (Disable a apache configaration dont diasble the 000-default.conf) 
+
 sudo a2enmod ssl rewrite headers
 sudo systemctl restart apache2
+
+while true; do
+  rsync -avz --delete ./ website:~/billing.republicwing.com/
+  sleep 1
+done
+(automatic sync every secind)
