@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>135x135 QR Uint8Array to Printer</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+</head>
+<body>
+  <h3>QR to Uint8Array → Printer</h3>
+  <input type="text" id="qrInput" value="https://arnab-bose.dev" style="width:300px">
+  <button onclick="generateAndPost()">Generate & POST</button>
+  <pre id="output" style="background:#f0f0f0;padding:10px;max-height:300px;overflow:auto;"></pre>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <script>
+    function generateAndPost() {
+      const text = document.getElementById('qrInput').value;
+
+      const targetSize = 136;  // 135x135 dots for 40mm print
+      const version = 5;       // QR version (v5 fits short URLs)
+      const quietZone = 4;     // white border modules
+
+      const qr = qrcode(version, 'L');
+      qr.addData(text);
+      qr.make();
+
+      const modules = qr.getModuleCount();
+      const totalModules = modules + quietZone * 2;
+
+      // Pixels per module to scale QR to exactly 135x135
+      const scale = Math.floor(targetSize / totalModules);
+      const finalSize = totalModules * scale; // Actual pixel dimensions
+
+      const rowBytes = Math.ceil(finalSize / 8);
+      const buffer = new Uint8Array(rowBytes * finalSize);  // 1-bit pixels
+
+      for (let y = 0; y < totalModules; y++) {
+        for (let x = 0; x < totalModules; x++) {
+          let isDark = false;
+          const qrX = x - quietZone;
+          const qrY = y - quietZone;
+          if (qrX >= 0 && qrY >= 0 && qrX < modules && qrY < modules) {
+            isDark = qr.isDark(qrX, qrY);
+          }
+
+          // Draw each module as a square of scale x scale pixels
+          for (let dy = 0; dy < scale; dy++) {
+            const py = y * scale + dy;
+            for (let dx = 0; dx < scale; dx++) {
+              const px = x * scale + dx;
+              const byteIndex = py * rowBytes + Math.floor(px / 8);
+              const bitMask = 0x80 >> (px % 8);
+              if (isDark) buffer[byteIndex] |= bitMask;
+            }
+          }
+        }
+      }
+
+      // Optional: Show hex preview
+      const hexLines = [];
+      for (let i = 0; i < buffer.length; i += rowBytes) {
+        const line = buffer.slice(i, i + rowBytes).reduce((hex, b) => hex + b.toString(16).padStart(2, '0') + ' ', '');
+        hexLines.push(line);
+      }
+      document.getElementById('output').textContent = hexLines.join('\n');
+
+      // Send Uint8Array via POST as binary
+      fetch("http://192.168.0.96/data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/octet-stream"
+        },
+        body: buffer
+      })
+      .then(res => res.text())
+      .then(data => {
+        console.log("✅ Data sent to printer. Response:", data);
+      })
+      .catch(err => {
+        console.error("❌ Error sending to printer:", err);
+      });
+    }
+  </script>
+</body>
+</html>

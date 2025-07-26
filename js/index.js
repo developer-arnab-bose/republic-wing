@@ -22,10 +22,10 @@ document.querySelectorAll('.sidebar-item').forEach(item => {
         document.getElementById('sidebar-full-section').innerHTML = invoiceSec;
         break;
       case "sidebar-product-add":
-        document.getElementById('sidebar-full-section').innerHTML = "add product";
+        document.getElementById('sidebar-full-section').innerHTML = "<iframe src='./inc/product.php' frameborder='0' id='inv-sectin'></iframe>";
         break;
       case "sidebar-inventory":
-        document.getElementById('sidebar-full-section').innerHTML = "inventory";
+        document.getElementById('sidebar-full-section').innerHTML = "<iframe src='./inc/inventory.php' frameborder='0' id='inv-sectin'></iframe>";
         break;
       case "sidebar-clients":
         document.getElementById('sidebar-full-section').innerHTML = "clients";
@@ -40,8 +40,6 @@ document.querySelectorAll('.sidebar-item').forEach(item => {
 
   });
 });
-
-
 
 // Create Invoice button
 function createInv(){

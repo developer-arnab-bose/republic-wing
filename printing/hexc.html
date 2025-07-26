@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hex to Bitmap Viewer</title>
+</head>
+<body>
+  <h2>Hex to Bitmap (1-bit)</h2>
+  <textarea id="hexInput" rows="10" cols="80">
+// Example hex (just fill it with your bitmap)
+FF FF 00 00
+81 81 00 00
+FF FF 00 00
+  </textarea>
+  <br>
+  Width: <input type="number" id="imgWidth" value="32"> px (must be multiple of 8)
+  <button onclick="renderBitmap()">Render</button>
+  <br><br>
+  <canvas id="preview" style="border:1px solid #000"></canvas>
+
+  <script>
+    function renderBitmap() {
+      const hexText = document.getElementById('hexInput').value.trim();
+      const width = parseInt(document.getElementById('imgWidth').value);
+      const rowBytes = width / 8;
+
+      const hex = hexText.replace(/[^0-9A-Fa-f]/g, '');
+      const bytes = new Uint8Array(hex.length / 2);
+      for (let i = 0; i < hex.length; i += 2) {
+        bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+      }
+
+      const height = bytes.length / rowBytes;
+      const canvas = document.getElementById('preview');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.createImageData(width, height);
+      const data = imgData.data;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const byte = bytes[y * rowBytes + Math.floor(x / 8)];
+          const bit = 0x80 >> (x % 8);
+          const isBlack = byte & bit;
+
+          const index = (y * width + x) * 4;
+          data[index] = data[index + 1] = data[index + 2] = isBlack ? 0 : 255;
+          data[index + 3] = 255; // Alpha
+        }
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+    }
+  </script>
+</body>
+</html>

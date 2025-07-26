@@ -95,3 +95,8 @@ while true; do
   sleep 1
 done
 (automatic sync every secind)
+
+write in anyfolder using php or other backend
+sudo chown -R www-data:www-data /folder name (or it does not have permission to write there)
+
+ln -s "/home/arnab/billingwebsite" "/var/www/billingwebsite" symlink to link the folder wit home folder for using scp or rsync

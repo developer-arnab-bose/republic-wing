@@ -24,3 +24,5 @@ if (!empty($username) && !empty($password)) {
 } else {
   echo "E1";
 }
+
+mysqli_close($conn);

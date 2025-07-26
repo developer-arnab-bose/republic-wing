@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Send QR Bitmap</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  
+</head>
+<body>
+  <h2>QR to Uint8Array (Printer-Safe)</h2>
+  <input type="text" id="qrInput" value="https://arnab-bose.dev">
+  <button onclick="generateAndPost()">Generate & Send</button>
+  <pre id="output"></pre>
+
+  <script>
+    function generateAndPost() {
+      const text = document.getElementById('qrInput').value;
+
+      const version = 5;
+      const quiet = 4;
+      const printerWidth = 136;  // Must be divisible by 8
+      const pixelPerModule = 3;  // Scale to make it ~135x135
+      const qr = qrcode(version, 'L');
+      qr.addData(text);
+      qr.make();
+
+      const modules = qr.getModuleCount();
+      const totalModules = modules + quiet * 2;
+      const imgSize = totalModules * pixelPerModule;
+
+      const finalSize = Math.ceil(imgSize / 8) * 8; // force byte alignment (multiple of 8)
+      const rowBytes = finalSize / 8;
+      const buffer = new Uint8Array(rowBytes * finalSize); // square image
+
+      for (let y = 0; y < totalModules; y++) {
+        for (let x = 0; x < totalModules; x++) {
+          const dark = (x >= quiet && y >= quiet && x < (modules + quiet) && y < (modules + quiet))
+            ? qr.isDark(x - quiet, y - quiet)
+            : false;
+
+          for (let dy = 0; dy < pixelPerModule; dy++) {
+            for (let dx = 0; dx < pixelPerModule; dx++) {
+              const px = x * pixelPerModule + dx;
+              const py = y * pixelPerModule + dy;
+              if (px >= finalSize || py >= finalSize) continue;
+
+              const byteIndex = py * rowBytes + Math.floor(px / 8);
+              const bit = 0x80 >> (px % 8);
+              if (dark) buffer[byteIndex] |= bit;
+            }
+          }
+        }
+      }
+
+      // Display HEX (for debug)
+      let hex = '';
+      for (let i = 0; i < buffer.length; i++) {
+        hex += buffer[i].toString(16).padStart(2, '0') + ' ';
+        if ((i + 1) % rowBytes === 0) hex += '\n';
+      }
+      document.getElementById('output').textContent = hex;
+
+      // Send Uint8Array to ESP32 printer server
+      fetch("http://192.168.0.96/data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/octet-stream"
+        },
+        body: buffer
+      })
+      .then(res => res.text())
+      .then(console.log)
+      .catch(console.error);
+    }
+  </script>
+</body>
+</html>
