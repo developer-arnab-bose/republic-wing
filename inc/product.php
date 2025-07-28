@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Management | Finance Flow</title>
+    <title>Inventory Management | Finance Flow Technology</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/product.css">
@@ -182,7 +182,7 @@
     </div>
 
     <div class="credit-footer p-4">
-        <p>© 2023 Finance Flow by Republic Wing. All rights reserved.</p>
+        <p>© 2023 Finance Flow Technology by Republic Wing. All rights reserved.</p>
     </div>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="../js/product.js"></script>

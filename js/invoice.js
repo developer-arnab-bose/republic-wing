@@ -409,7 +409,8 @@ document.getElementById('save-draft-bottom').addEventListener('click', function 
 document.getElementById('cancel-invoice').addEventListener('click', function () {
   // In a real app, this would redirect to the invoices list page
   if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-    window.top.location.href = window.location.origin;
+    // window.top.location.href = window.location.origin;
+    window.parent.home();
   }
 });
 

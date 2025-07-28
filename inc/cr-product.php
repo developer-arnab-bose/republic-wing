@@ -14,17 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $description = $_POST["description"];
 
   if (isset($name) && isset($brand) && isset($mrp) && isset($sell) && isset($cost) && isset($unit) && isset($qty) && isset($low) && isset($description) && isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-    $data = array(
-      "name" => $name,
-      "brand" => $brand,
-      "mrp" => $mrp,
-      "sell" => $sell,
-      "cost" => $cost,
-      "unit" => $unit,
-      "qty" => $qty,
-      "low" => $low,
-      "description" => $description,
-    );
 
     $fileTmpPath = $_FILES['image']['tmp_name'];
     $fileName = $_FILES['image']['name'];

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <button onclick="connectToSerial()">Connect</button>
+  <button onclick="sendSerialData('hello from web!')">Send "hello"</button>
+  <canvas id="printCanvas" width="384" height="900" style="border: 1px solid red;"></canvas>
+  <input type="file" id="logoInput" accept="image/*" />
+  <button onclick="printCanvas()">🖨️ Print Canvas</button>
+  <script>
+    // UUIDs for the Nordic UART Service
+    const UART_SERVICE_UUID = '49535343-fe7d-4ae5-8fa9-9fafd205e455';
+    // Characteristic for receiving data (peripheral -> central)
+    const RX_CHARACTERISTIC_UUID = '49535343-1e4d-4bd9-ba61-23c647249616';
+    // Characteristic for sending data (central -> peripheral)
+    const TX_CHARACTERISTIC_UUID = '49535343-8841-43f4-a8d4-ecbe34729bb3';
+
+    let txCharacteristic; // Store the TX characteristic globally to send data later
+
+    // This function handles the entire connection process
+    async function connectToSerial() {
+      try {
+        // Step 1: Request the device from the user
+        // It's better to filter by service UUID than accepting all devices
+        const device = await navigator.bluetooth.requestDevice({
+
+          // If you must use acceptAllDevices, you need to declare the service as optional
+          acceptAllDevices: true,
+          optionalServices: [UART_SERVICE_UUID]
+        });
+        console.log('Device selected:', device.name);
+
+        // Step 2: Connect to the device's GATT server
+        console.log('Connecting to GATT Server...');
+        const server = await device.gatt.connect();
+
+        // Step 3: Get the UART service
+        console.log('Getting UART Service...');
+        const service = await server.getPrimaryService(UART_SERVICE_UUID);
+
+        // Step 4: Get the RX and TX characteristics
+        console.log('Getting Characteristics...');
+        const rxCharacteristic = await service.getCharacteristic(RX_CHARACTERISTIC_UUID);
+        txCharacteristic = await service.getCharacteristic(TX_CHARACTERISTIC_UUID);
+
+        // Step 5: Start listening for notifications from the device ⬅️
+        console.log('Starting notifications...');
+        await rxCharacteristic.startNotifications();
+        rxCharacteristic.addEventListener('characteristicvaluechanged', handleIncomingData);
+
+        console.log('✅ Ready for serial communication!');
+
+      } catch (error) {
+        console.error('Error connecting to device: ', error);
+      }
+    }
+
+    // Handles incoming data from the device
+    function handleIncomingData(event) {
+      const value = event.target.value; // This is a DataView
+      const decoder = new TextDecoder('utf-8');
+      const receivedString = decoder.decode(value);
+      console.log('Received ⬅️:', receivedString);
+    }
+
+    // Function to send data to the device ➡️
+    // Sends text data to the printer with optional line feed and ESC/POS commands
+    async function sendSerialData(data, addLineFeed = true) {
+      if (!txCharacteristic) {
+        console.error('Not connected to a device yet.');
+        return;
+      }
+
+      try {
+        const encoder = new TextEncoder();
+
+        let finalData = data;
+
+        // Add line feed (0x0A) after the text to move to next line
+        if (addLineFeed) {
+          finalData += '\n'; // or use '\r\n' if your printer expects carriage return
+        }
+
+        const encodedData = encoder.encode(finalData);
+
+        // Chunk the data to avoid buffer overflows (e.g., 20 bytes per packet)
+        const chunkSize = 20;
+        for (let i = 0; i < encodedData.length; i += chunkSize) {
+          const chunk = encodedData.slice(i, i + chunkSize);
+          await txCharacteristic.writeValueWithoutResponse(chunk);
+          await new Promise(resolve => setTimeout(resolve, 50)); // Small delay between chunks
+        }
+
+        console.log('Sent to printer ➡️:', data);
+
+      } catch (error) {
+        console.error('Error sending data:', error);
+      }
+
+    }
+
+
+    // function drawOnCanvas() {
+      // const canvas = document.getElementById('printCanvas');
+      // const ctx = canvas.getContext('2d');
+
+      // // Fill white background
+      // ctx.fillStyle = 'white';
+      // ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // // Draw some text
+      // ctx.fillStyle = 'black';
+      // ctx.font = 'bold 20px Arial';
+      // ctx.fillText('🧾 Thermal Printer Demo', 20, 40);
+      // ctx.font = '16px Arial';
+      // ctx.fillText('Product: Coffee Mug', 20, 80);
+      // ctx.fillText('Price: ₹250', 20, 110);
+      // ctx.fillText('Thank you for shopping!', 20, 160);
+
+      // // Draw a box
+      // ctx.strokeRect(10, 200, 364, 100);
+      // ctx.fillText('This is a box', 20, 230);
+
+      // const canvas = document.getElementById('printCanvas');
+      // const ctx = canvas.getContext('2d');
+
+      // const w = canvas.width;  // fixed at 384
+      // const h = canvas.height; // adjustable
+
+      // // Monochrome background
+      // ctx.fillStyle = '#000';
+      // ctx.fillRect(0, 0, w, h);
+
+      // // Horizontal grayscale lines
+      // ctx.strokeStyle = '#444';
+      // ctx.lineWidth = 1;
+      // const lineGap = h / 30;
+      // for (let i = 0; i < h; i += lineGap) {
+      //   ctx.beginPath();
+      //   ctx.moveTo(0, i);
+      //   ctx.lineTo(w, i);
+      //   ctx.stroke();
+      // }
+
+      // // Corner markers (white circles)
+      // const r = Math.min(w, h) * 0.025;
+      // ctx.fillStyle = '#fff';
+      // ctx.beginPath(); ctx.arc(r, r, r, 0, Math.PI * 2); ctx.fill(); // top-left
+      // ctx.beginPath(); ctx.arc(w - r, r, r, 0, Math.PI * 2); ctx.fill(); // top-right
+      // ctx.beginPath(); ctx.arc(r, h - r, r, 0, Math.PI * 2); ctx.fill(); // bottom-left
+      // ctx.beginPath(); ctx.arc(w - r, h - r, r, 0, Math.PI * 2); ctx.fill(); // bottom-right
+
+      // // Text settings (font size scales with height)
+      // const fontSize = Math.max(12, h * 0.025);
+      // ctx.fillStyle = '#fff';
+      // ctx.font = `${fontSize}px monospace`;
+
+      // ctx.fillText(`Top Left (0,0)`, r + 5, r * 3);
+      // ctx.fillText(`Top Right (${w},0)`, w * 0.5, r * 3);
+      // ctx.fillText(`Bottom Left (0,${h})`, r + 5, h - r * 1.5);
+      // ctx.fillText(`Bottom Right (${w},${h})`, w * 0.5, h - r * 1.5);
+
+      // // Center label
+      // ctx.fillStyle = '#fff';
+      // ctx.font = `bold ${fontSize * 1.5}px sans-serif`;
+      // ctx.textAlign = 'center';
+      // ctx.fillText('MONOCHROME VIEW', w / 2, h / 2);
+
+      const canvas = document.getElementById('printCanvas');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      const drawInvoice = (logoImg) => {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, w, h);
+
+        const padding = 20;
+        const logoSize = 80;
+
+        // Draw uploaded logo if available
+        if (logoImg) {
+          ctx.drawImage(logoImg, (w - logoSize) / 2, padding, logoSize, logoSize);
+        }
+
+        // Title & subtitle
+        ctx.fillStyle = '#000';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.fillText('রিপাবলিক উইং', w / 2, padding + logoSize + 30);
+
+        ctx.font = '16px sans-serif';
+        ctx.fillText('FMCG ও স্টেশনারি দোকান', w / 2, padding + logoSize + 55);
+
+        // Invoice info (sample)
+        ctx.textAlign = 'left';
+        ctx.font = '15px sans-serif';
+        let y = padding + logoSize + 90;
+        const lineHeight = 24;
+
+        const lines = [
+          'বিল নম্বর: #INV-1023',
+          'তারিখ: ২৭ জুলাই ২০২৫',
+          'ক্রেতার নাম: অর্ণব বসু',
+          'ঠিকানা: ১২৩, গড়িয়া, কলকাতা',
+          '',
+          'পণ্য তালিকা:',
+          '১. কলম - ₹১০',
+          '২. কনডম - ₹৫০',
+          '৩. বিস্কুট - ₹৩০',
+          '',
+          'মোট: ₹৯০',
+          'ট্যাক্স (১০%): ₹৯',
+          'সর্বমোট: ₹৯৯'
+        ];
+
+        lines.forEach(line => {
+          ctx.fillText(line, padding, y);
+          y += lineHeight;
+        });
+
+        // Load QR code
+        const qr = new Image();
+        qr.crossOrigin = 'anonymous';
+        qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://arnabbose.dev/';
+
+        qr.onload = () => {
+          const qrSize = 100;
+          const qrX = (w - qrSize) / 2;
+          const qrY = h - padding - qrSize - 20;
+          ctx.drawImage(qr, qrX, qrY, qrSize, qrSize);
+
+          ctx.textAlign = 'center';
+          ctx.font = '12px sans-serif';
+          ctx.fillText('https://arnabbose.dev/', w / 2, qrY + qrSize + 15);
+        };
+      };
+
+      // Handle logo input
+      document.getElementById('logoInput').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (!file) {
+          drawInvoice(null);
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const img = new Image();
+          img.onload = function () {
+            drawInvoice(img);
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+      drawInvoice(null);
+    // }
+
+    // Convert canvas image to raster bitmap ESC/POS format
+    function convertCanvasToRaster(canvas) {
+      const width = canvas.width;
+      const height = canvas.height;
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const pixels = imageData.data;
+
+      const bytesPerRow = Math.ceil(width / 8);
+      const imageBytes = [];
+
+      for (let y = 0; y < height; y++) {
+        let row = [];
+        for (let x = 0; x < width; x += 8) {
+          let byte = 0;
+          for (let b = 0; b < 8; b++) {
+            const i = ((y * width) + (x + b)) * 4;
+            const r = pixels[i];
+            const g = pixels[i + 1];
+            const bVal = pixels[i + 2];
+
+            // Convert to grayscale and threshold
+            const brightness = 0.299 * r + 0.587 * g + 0.114 * bVal;
+            if (brightness < 127) {
+              byte |= (1 << (7 - b));
+            }
+          }
+          row.push(byte);
+        }
+        imageBytes.push(...row);
+      }
+
+      // ESC/POS command: GS v 0 (bit image raster)
+      const header = '\x1D\x76\x30\x00' + String.fromCharCode(bytesPerRow % 256, bytesPerRow >> 8, height % 256, height >> 8);
+      const headerBytes = new Uint8Array([0x1D, 0x76, 0x30, 0x00, bytesPerRow & 0xFF, (bytesPerRow >> 8), height & 0xFF, (height >> 8)]);
+
+      return new Uint8Array([...headerBytes, ...imageBytes]);
+    }
+
+    // Full pipeline: draw, convert, and send
+    // async function printCanvas() {
+    //   drawOnCanvas(); // Draw content
+    //   const canvas = document.getElementById('printCanvas');
+
+    //   const imageData = convertCanvasToRaster(canvas);
+
+    //   // Send chunks to thermal printer
+    //   const chunkSize = 20;
+    //   for (let i = 0; i < imageData.length; i += chunkSize) {
+    //     const chunk = imageData.slice(i, i + chunkSize);
+    //     await txCharacteristic.writeValueWithoutResponse(chunk);
+    //     await new Promise(resolve => setTimeout(resolve, 50)); // delay between chunks
+    //   }
+
+    //   // Feed paper and cut (optional)
+    //   await sendSerialData('\n\n\n'); // feed paper
+    //   // await sendSerialData('\x1D\x56\x00', false); // cut if supported
+    // }
+
+    async function printCanvas() {
+      // drawOnCanvas(); // Redraw canvas each time
+      const canvas = document.getElementById('printCanvas');
+      const imageData = convertCanvasToRaster(canvas);
+
+      // Optimal chunk size (ESP32 typically supports 180 bytes MTU, safe to use ~160)
+      const chunkSize = 160;
+
+      // Send chunks faster
+      for (let i = 0; i < imageData.length; i += chunkSize) {
+        const chunk = imageData.slice(i, i + chunkSize);
+        try {
+          await txCharacteristic.writeValueWithoutResponse(chunk);
+          await new Promise(resolve => setTimeout(resolve, 8)); // Try 0–5ms if stable
+        } catch (err) {
+          console.error('Chunk send failed:', err);
+        }
+      }
+
+      // Feed paper and cut (if supported)
+      await sendSerialData('\n\n\n');
+      await sendSerialData('\x1D\x56\x00', false);
+    }
+
+
+  </script>
+</body>
+
+</html>

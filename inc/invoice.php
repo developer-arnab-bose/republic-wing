@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create New Invoice - Finance Flow</title>
+    <title>Create New Invoice - Finance Flow Technology</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/invoice.css">
@@ -45,7 +45,7 @@
                             <div>
                                 <div class="input-group">
                                     <label for="shop-name">Shop Name</label>
-                                    <input type="text" id="shop-name" value="Finance Flow"
+                                    <input type="text" id="shop-name" value="Finance Flow Technology"
                                         placeholder="Enter your shop name">
                                 </div>
 
@@ -115,7 +115,7 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h2 class="font-bold text-lg text-gray-800">Finance Flow</h2>
+                                    <h2 class="font-bold text-lg text-gray-800">Finance Flow Technology</h2>
                                     <p class="text-xs text-gray-500">Invoice Management System</p>
                                 </div>
                             </div>
@@ -409,7 +409,7 @@
                             <div class="input-group">
                                 <label for="terms">Terms & Conditions</label>
                                 <textarea id="terms" rows="3" placeholder="Enter terms and conditions"
-                                    class="resize-none">Late payments are subject to a 1.5% monthly finance charge. All goods remain the property of Finance Flow until paid in full.</textarea>
+                                    class="resize-none">Late payments are subject to a 1.5% monthly finance charge. All goods remain the property of Finance Flow Technology until paid in full.</textarea>
                             </div>
 
                             <div class="input-group">
@@ -700,7 +700,7 @@
         </div>
     </div>
 
-    <!-- Default Business Logo SVG (Finance Flow) -->
+    <!-- Default Business Logo SVG (Finance Flow Technology) -->
     <div class="hidden">
         <svg id="default-business-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
             <rect width="100" height="100" rx="10" fill="#3b82f6" />

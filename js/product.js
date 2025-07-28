@@ -140,21 +140,20 @@ addProductForm.addEventListener('submit', function (e) {
       processData: false,
       success: function (res) {
 
-        // if (res == "OK") {
+        if (res == "OK") {
+          // Show success message
+          successMessage.style.display = 'block';
+  
+          // Hide success message after 3 seconds
+          setTimeout(() => {
+            successMessage.style.display = 'none';
+          }, 5000);
 
-        // }
-        // Show success message
-        successMessage.style.display = 'block';
-
-        // Hide success message after 3 seconds
-        setTimeout(() => {
-          successMessage.style.display = 'none';
-        }, 5000);
-
-        // Reset form
-        addProductForm.reset();
-        tagsContainer.innerHTML = '';
-        imagePreviewContainer.innerHTML = '';
+          // Reset form
+          addProductForm.reset();
+          tagsContainer.innerHTML = '';
+          imagePreviewContainer.innerHTML = '';
+        }
       }
     });
   } else {

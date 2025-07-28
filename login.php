@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Finance Flow</title>
+    <title>Login | Finance Flow Technology</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/login.css">
@@ -29,7 +29,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h1 class="text-2xl font-bold text-gray-800">Finance Flow</h1>
+                            <h1 class="text-2xl font-bold text-gray-800">Finance Flow Technology</h1>
                             <p class="text-xs text-gray-500">by Republic Wing</p>
                         </div>
                     </div>
@@ -87,7 +87,7 @@
                 <div class="h-full flex flex-col">
                     <div class="mb-8">
                         <h2 class="text-2xl font-bold mb-2">Streamline Your Business</h2>
-                        <p class="opacity-80">Finance Flow helps you manage your business finances with ease</p>
+                        <p class="opacity-80">Finance Flow Technology helps you manage your business finances with ease</p>
                     </div>
 
                     <div class="flex-1 flex flex-col justify-center">
@@ -151,7 +151,7 @@
     </div>
 
     <div class="credit-footer p-4">
-        <p>© 2023 Finance Flow by Republic Wing. All rights reserved.</p>
+        <p>© 2023 Finance Flow Technology by Republic Wing. All rights reserved.</p>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>

@@ -1,6 +1,6 @@
 // Sidebar navigation
 
-const creatInv = "<iframe src='./inc/invoice.php' frameborder='0' id='inv-sectin'></iframe>"; // create inv
+// const creatInv = ; // create inv
 document.getElementById('sidebar-full-section').innerHTML = invoiceSec;
 
 document.querySelectorAll('.sidebar-item').forEach(item => {
@@ -44,9 +44,13 @@ document.querySelectorAll('.sidebar-item').forEach(item => {
 // Create Invoice button
 function createInv(){
 
-  document.getElementById('sidebar-full-section').innerHTML = creatInv;
+  document.getElementById('sidebar-full-section').innerHTML = "<iframe src='./inc/invoice.php' frameborder='0' id='inv-sectin'></iframe>";
   document.getElementById('page-title').textContent = "Create Invoice";
   
+}
+
+function home() {
+  document.getElementById('sidebar-full-section').innerHTML = invoiceSec;
 }
 
 document.getElementById("sidebar-logout").addEventListener("click", () => {
